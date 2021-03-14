@@ -42,3 +42,35 @@ This will send us to the **[username]/index.tsx** component we have set. We can 
 ### Prefetching
 
 This component has **default prefetching**, meaning that the page will load this content in the background so when a user clicks the link, it will redirect instantly seemlessly. This can be disabled by adding the **prefetching={false}** property to our Link component.
+
+## Loading Spinner
+
+We will create a reusable loading indication that we will use accross our entire app. It will go in our components/ directory.
+
+```tsx
+import { FC } from 'react';
+
+interface LoaderProps {
+  show: boolean;
+}
+
+const Loader: FC<LoaderProps> = ({ show }) => {
+  if (show) return <div className='loader' />;
+};
+
+export default Loader;
+```
+
+This component takes styles from the global css file. Now we can import this component in any of our pages.
+
+### Absolute imports in Next
+
+Since Next doesn't have a src/ directory, the setup is easier. In our tsconfig or jsconfig ile we add the **baseUrl** property to **"."**:
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": "."
+  }
+}
+```
