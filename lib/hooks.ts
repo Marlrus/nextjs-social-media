@@ -6,6 +6,11 @@ export const useUserData = () => {
   const [user] = useAuthState(auth);
   const [username, setUsername] = useState(null);
 
+  const signOut = () => {
+    setUsername(null);
+    auth.signOut();
+  };
+
   useEffect(() => {
     // Turn off realtime subscription
     let unsubscribe: any;
@@ -23,5 +28,5 @@ export const useUserData = () => {
     return unsubscribe;
   }, [user]);
 
-  return { user, username };
+  return { user, username, signOut };
 };

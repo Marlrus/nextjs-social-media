@@ -12,7 +12,7 @@ import { auth, googleAuthProvider, firestore } from 'lib/firebase';
 import debounce from 'lodash.debounce';
 
 const EnterPage: FC = ({}) => {
-  const { user, username } = useContext(UserContext);
+  const { user, username, signOut } = useContext(UserContext);
 
   const noUsername = user && !username;
   const fullLogin = user && username;
@@ -42,7 +42,7 @@ const EnterPage: FC = ({}) => {
     const [isValid, setIsValid] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const { user, username } = useContext(UserContext);
+    const { user } = useContext(UserContext);
 
     useEffect(() => {
       checkUsername(formValue);
@@ -71,7 +71,7 @@ const EnterPage: FC = ({}) => {
       const batch = firestore.batch();
       batch.set(userDoc, {
         username: formValue,
-        photoUrl: user.photoUrl,
+        photoURL: user.photoURL,
         displayName: user.displayName,
       });
       batch.set(usernameDoc, { uid: user.uid });
@@ -141,7 +141,7 @@ const EnterPage: FC = ({}) => {
   }
 
   function SignOutButton() {
-    return <button onClick={() => auth.signOut()}>Sign Out</button>;
+    return <button onClick={signOut}>Sign Out</button>;
   }
 };
 

@@ -23,7 +23,7 @@ const Navbar: FC = ({}) => {
             </li>
             <li>
               <Link href={`/${username}`}>
-                <img src={''} />
+                <img src={user.photoURL} />
               </Link>
             </li>
           </>

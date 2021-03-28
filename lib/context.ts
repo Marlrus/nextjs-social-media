@@ -1,12 +1,19 @@
 import { createContext } from 'react';
 
-export interface User {
-  user: {
-    uid: string;
-    photoUrl: string;
-    displayName: string;
-  } | null;
-  username: string | null;
+interface User {
+  uid: string;
+  photoURL: string;
+  displayName: string;
 }
 
-export const UserContext = createContext<User>({ user: null, username: null });
+interface UserAndUsername {
+  user: User | null;
+  username: string | null;
+  signOut: () => void;
+}
+
+export const UserContext = createContext<UserAndUsername>({
+  user: null,
+  username: null,
+  signOut: null,
+});
