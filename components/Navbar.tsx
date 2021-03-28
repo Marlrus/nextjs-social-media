@@ -1,9 +1,9 @@
-import { FC } from 'react';
+import { FC, useContext } from 'react';
+import { UserContext } from 'lib/context';
 import Link from 'next/link';
 
 const Navbar: FC = ({}) => {
-  const username = null;
-  const user = null;
+  const { user, username } = useContext(UserContext);
 
   return (
     <nav className='navbar'>
@@ -23,7 +23,7 @@ const Navbar: FC = ({}) => {
             </li>
             <li>
               <Link href={`/${username}`}>
-                <img src={user?.photoURL} />
+                <img src={''} />
               </Link>
             </li>
           </>
