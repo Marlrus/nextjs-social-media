@@ -188,4 +188,146 @@ We create a whole lot of code to do manual validation of the user as well as a b
 
 We need a few things to debounce in react. Since state change triggers a re-render, we need to use **useCallback** to keep the reference to the original function. We set [] as the dependency array because we don't want it to refresh. Then inside we can use the **debounce** function, just as we would setTimeout. Inside of that function, as the callback, we user our custom function. Once that is done, our function is effectively debounced.
 
-**Video 17**
+### UsernameForm
+
+We created the UsernameForm. It lives inside the same component, which is less than ideal. We have state for the formValue which is just a string for the username, isValid which is a boolean for our validation, and loading which indicates when we are executing an API call.
+
+#### checkUsername
+
+We check the validation using a **useEffect** which is triggered anytime formValue changes. Here we call the checkUsername function.
+
+- This function uses **useCallback** and **debounce** to be debounced and not re-defined on every re-render.
+- This function takes the username and returns if the username is less than 3 characters long.
+- If not it will fetch the username from the database.
+- We get the ref to the document and execute **get** and extract the **exists** property.
+- Then we **setIsValid** to the opposite of exists and setLoading as false.
+
+#### onSubmit
+
+This fonction uses the type: `FormEvent<HTMLFormElement>`. We preventDefault, then we create the references using firestore:
+
+```tsx
+// Create refs for both documents
+const userDoc = firestore.doc(`users/${user.uid}`);
+const usernameDoc = firestore.doc(`usernames/${formValue}`);
+```
+
+Then we create a transaction using **batch**:
+
+```tsx
+// Run transaction for both documents
+const batch = firestore.batch();
+batch.set(userDoc, {
+  username: formValue,
+  photoURL: user.photoURL,
+  displayName: user.displayName,
+});
+batch.set(usernameDoc, { uid: user.uid });
+
+await batch.commit();
+```
+
+Here we write to our firestore DB if everything works properly.
+
+We also create a component that takes the username, isValid, and loading, and returns a styled p tag depending on the message that should be displayed.
+
+#### onChange
+
+This function receives an event of type: `ChangeEvent<HTMLInputElement>`
+
+- We get the value with e.target.value
+- We create a **regex** for the valid characters
+- If the value is shorter than 3 we set the value but set loading and is valid to false.
+- We then use the regex with the **test** method to see if the value meets our criteria.
+
+```tsx
+const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const value = e.target.value.toLowerCase();
+  const regex = /^(?=[a-zA-Z0-9._]{3,15}$)(?!.*[_.]{2})[^_.].*[^_.]$/;
+
+  if (value.length < 3) {
+    setFormValue(value);
+    setLoading(false);
+    setIsValid(false);
+    return;
+  }
+
+  if (regex.test(value)) {
+    setFormValue(value);
+    setLoading(true);
+    setIsValid(false);
+  }
+};
+```
+
+We also create the form and add some debugging values to see how the state changes as we work with the input. This is a very convoluted component with an extreme number of moving parts.
+
+## Moving auth to UserContext
+
+Once I was done I was getting an error on signout because the username was not being cleared. I also wanted to do something similar to Angular services to handle the auth of the application. Therefore I decided to move these into the context. I started by adding the functions I need to the hook:
+
+```tsx
+const signOut = () => {
+  setUsername(null);
+  auth.signOut();
+};
+
+const signInWithGoogle = async () => {
+  await auth.signInWithPopup(googleAuthProvider);
+};
+
+// New return
+return { user, username, signOut, signInWithGoogle };
+```
+
+Then I had to use these new propreties in the conext:
+
+```tsx
+import { createContext } from 'react';
+
+interface User {
+  uid: string;
+  photoURL: string;
+  displayName: string;
+}
+
+interface UserAndUsername {
+  user: User | null;
+  username: string | null;
+  signOut: () => void;
+  signInWithGoogle: () => void;
+}
+
+export const UserContext = createContext<UserAndUsername>({
+  user: null,
+  username: null,
+  signOut: null,
+  signInWithGoogle: null,
+});
+```
+
+Once this is done, we need to pass it to the context in the app.tsx file:
+
+```tsx
+import '../styles/globals.css';
+import Navbar from 'components/Navbar';
+import { Toaster } from 'react-hot-toast';
+import { UserContext } from 'lib/context';
+import { useUserData } from 'lib/hooks';
+
+const MyApp = ({ Component, pageProps }) => {
+  const { user, username, signOut, signInWithGoogle } = useUserData();
+
+  return (
+    <UserContext.Provider value={{ user, username, signOut, signInWithGoogle }}>
+      <Navbar />
+      <Component {...pageProps} />
+      <Toaster />
+    </UserContext.Provider>
+  );
+};
+
+export default MyApp;
+```
+
+I'm thinking of a way I can conosildate these values in the context and just handle everything from there, however since we are using **useAuthState**, which is a hook, this cannot be used outside of a component.

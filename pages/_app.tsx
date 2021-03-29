@@ -5,10 +5,10 @@ import { UserContext } from 'lib/context';
 import { useUserData } from 'lib/hooks';
 
 const MyApp = ({ Component, pageProps }) => {
-  const { user, username, signOut } = useUserData();
+  const { user, username, signOut, signInWithGoogle } = useUserData();
 
   return (
-    <UserContext.Provider value={{ user, username, signOut }}>
+    <UserContext.Provider value={{ user, username, signOut, signInWithGoogle }}>
       <Navbar />
       <Component {...pageProps} />
       <Toaster />

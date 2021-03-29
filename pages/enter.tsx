@@ -8,11 +8,11 @@ import {
   FormEvent,
 } from 'react';
 import { UserContext } from 'lib/context';
-import { auth, googleAuthProvider, firestore } from 'lib/firebase';
+import { firestore } from 'lib/firebase';
 import debounce from 'lodash.debounce';
 
 const EnterPage: FC = ({}) => {
-  const { user, username, signOut } = useContext(UserContext);
+  const { user, username, signOut, signInWithGoogle } = useContext(UserContext);
 
   const noUsername = user && !username;
   const fullLogin = user && username;
@@ -26,10 +26,6 @@ const EnterPage: FC = ({}) => {
   );
 
   function SignInButton() {
-    const signInWithGoogle = async () => {
-      await auth.signInWithPopup(googleAuthProvider);
-    };
-
     return (
       <button className='btn-google' onClick={signInWithGoogle}>
         <img src={'/google.png'} alt='Google Logo' /> Sign in with Google
@@ -97,6 +93,7 @@ const EnterPage: FC = ({}) => {
         setFormValue(value);
         setLoading(false);
         setIsValid(false);
+        return;
       }
 
       if (regex.test(value)) {

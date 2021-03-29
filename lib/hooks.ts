@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth, firestore } from 'lib/firebase';
+import { auth, googleAuthProvider, firestore } from 'lib/firebase';
 
 export const useUserData = () => {
   const [user] = useAuthState(auth);
-  const [username, setUsername] = useState(null);
+  const [username, setUsername] = useState<string | null>(null);
 
   const signOut = () => {
     setUsername(null);
     auth.signOut();
+  };
+
+  const signInWithGoogle = async () => {
+    await auth.signInWithPopup(googleAuthProvider);
   };
 
   useEffect(() => {
@@ -28,5 +32,5 @@ export const useUserData = () => {
     return unsubscribe;
   }, [user]);
 
-  return { user, username, signOut };
+  return { user, username, signOut, signInWithGoogle };
 };
